@@ -15,8 +15,8 @@ interface Props {
 }
 
 export function Positions({ tick, fills }: Props) {
-  const positions: PositionData[] =
-    (tick?.strategy_state?.positions as PositionData[] | undefined) ?? [];
+  const rawPos = tick?.strategy_state?.positions;
+  const positions: PositionData[] = Array.isArray(rawPos) ? rawPos : [];
 
   return (
     <div className="rounded-lg border border-slate-800 p-4 space-y-3">

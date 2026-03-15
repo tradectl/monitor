@@ -57,7 +57,8 @@ export default function MonitorPage() {
                   const d = strategies.get(key);
                   const tick = d?.tick;
                   const mode = tick?.mode;
-                  const positions = (tick?.strategy_state?.positions as unknown[] | undefined) ?? [];
+                  const rawPos = tick?.strategy_state?.positions;
+                  const positions = Array.isArray(rawPos) ? rawPos : [];
                   return (
                     <button
                       key={key}
