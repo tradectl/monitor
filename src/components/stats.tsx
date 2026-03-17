@@ -14,7 +14,7 @@ export function Stats({ tick }: Props) {
     );
   }
 
-  const ss = tick.strategy_state;
+  const ss = tick.strategy_state ?? {};
 
   return (
     <div className="rounded-lg border border-slate-800 p-4 space-y-3">
@@ -36,19 +36,19 @@ export function Stats({ tick }: Props) {
       <div className="grid grid-cols-2 gap-2 text-sm">
         <div>
           <div className="text-slate-500">Bid</div>
-          <div className="font-mono">{tick.bid_price.toFixed(2)}</div>
+          <div className="font-mono">{tick.bid_price?.toFixed(2) ?? "—"}</div>
         </div>
         <div>
           <div className="text-slate-500">Ask</div>
-          <div className="font-mono">{tick.ask_price.toFixed(2)}</div>
+          <div className="font-mono">{tick.ask_price?.toFixed(2) ?? "—"}</div>
         </div>
         <div>
           <div className="text-slate-500">Balance</div>
-          <div className="font-mono">{tick.balance.toFixed(2)}</div>
+          <div className="font-mono">{tick.balance?.toFixed(2) ?? "—"}</div>
         </div>
         <div>
           <div className="text-slate-500">Trades</div>
-          <div className="font-mono">{tick.trade_count}</div>
+          <div className="font-mono">{tick.trade_count ?? 0}</div>
         </div>
       </div>
 
