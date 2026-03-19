@@ -43,7 +43,13 @@ export function useMonitor(url: string) {
     };
     ws.onerror = () => ws.close();
     ws.onmessage = (e) => {
-      const event: MonitorEvent = JSON.parse(e.data);
+      let event: MonitorEvent;
+      try {
+        event = JSON.parse(e.data);
+      } catch {
+        console.warn("monitor: malformed WebSocket message, skipping");
+        return;
+      }
 
       if (event.type === "Tick") {
         const key = `${event.strategy_name}/${event.symbol}`;
