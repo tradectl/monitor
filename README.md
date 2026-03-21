@@ -30,7 +30,7 @@ The monitor is a read-only WebSocket client. The bot's `MonitorBroadcaster` (fro
 {
   "type": "Tick",
   "timestamp_ms": 1710460800000,
-  "strategy_name": "bouncer",
+  "strategy_name": "bounce-back",
   "mode": "live",
   "symbol": "BTCUSDT",
   "bid_price": 67150.0,
@@ -50,7 +50,7 @@ The monitor is a read-only WebSocket client. The bot's `MonitorBroadcaster` (fro
 {
   "type": "Fill",
   "timestamp_ms": 1710460800000,
-  "strategy_name": "bouncer",
+  "strategy_name": "bounce-back",
   "symbol": "BTCUSDT",
   "side": "Long",
   "price": 67150.5,

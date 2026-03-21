@@ -5,6 +5,7 @@ import { PriceChart } from "../components/price-chart";
 import { Positions } from "../components/positions";
 import { Stats } from "../components/stats";
 import { ConnectionStatus } from "../components/connection";
+import { ErrorBoundary } from "../components/error-boundary";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:9100";
 
@@ -32,16 +33,22 @@ export default function MonitorPage() {
           {data && (
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="h-[500px] min-w-0 flex-1">
-                <PriceChart
-                  key={activeKey}
-                  ticks={data.ticks}
-                  fills={data.fills}
-                  tick={data.tick}
-                />
+                <ErrorBoundary>
+                  <PriceChart
+                    key={activeKey}
+                    ticks={data.ticks}
+                    fills={data.fills}
+                    tick={data.tick}
+                  />
+                </ErrorBoundary>
               </div>
               <div className="lg:w-72 shrink-0 space-y-4 overflow-y-auto">
-                <Stats tick={data.tick} />
-                <Positions tick={data.tick} fills={data.fills} />
+                <ErrorBoundary>
+                  <Stats tick={data.tick} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                  <Positions tick={data.tick} fills={data.fills} />
+                </ErrorBoundary>
               </div>
             </div>
           )}
