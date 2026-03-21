@@ -31,9 +31,9 @@ export function Positions({ tick, fills }: Props) {
         <div className="text-xs text-slate-500">No open positions</div>
       ) : (
         <div className="space-y-2">
-          {positions.map((pos, i) => (
+          {positions.map((pos) => (
             <div
-              key={i}
+              key={`${pos.side}-${pos.entry_price}-${pos.quantity}`}
               className="text-xs border border-slate-800 rounded p-2 space-y-1"
             >
               <div className="flex justify-between items-center">

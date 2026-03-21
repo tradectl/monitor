@@ -3,7 +3,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { MonitorTick, MonitorFill, MonitorEvent } from "../types/monitor";
 
 const MAX_TICKS = 7200;
-const RECONNECT_DELAY = 3000;
+const INITIAL_RECONNECT_DELAY = 3000;
+const MAX_RECONNECT_DELAY = 60_000;
 
 export interface StrategyData {
   tick: MonitorTick | null;
@@ -25,21 +26,35 @@ export function useMonitor(url: string) {
   const reconnectRef = useRef<ReturnType<typeof setTimeout>>();
   const aliveRef = useRef(false);
   const fillSeenRef = useRef<Set<string>>(new Set());
+  const backoffRef = useRef(INITIAL_RECONNECT_DELAY);
 
   const connect = useCallback(() => {
     if (typeof window === "undefined") return;
     if (!aliveRef.current) return;
 
-    const ws = new WebSocket(url);
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(url);
+    } catch (e) {
+      console.error("monitor: failed to create WebSocket:", e);
+      setConnected(false);
+      if (aliveRef.current) {
+        reconnectRef.current = setTimeout(connect, backoffRef.current);
+        backoffRef.current = Math.min(backoffRef.current * 2, MAX_RECONNECT_DELAY);
+      }
+      return;
+    }
     wsRef.current = ws;
 
     ws.onopen = () => {
       if (aliveRef.current) setConnected(true);
+      backoffRef.current = INITIAL_RECONNECT_DELAY;
     };
     ws.onclose = () => {
       if (!aliveRef.current) return;
       setConnected(false);
-      reconnectRef.current = setTimeout(connect, RECONNECT_DELAY);
+      reconnectRef.current = setTimeout(connect, backoffRef.current);
+      backoffRef.current = Math.min(backoffRef.current * 2, MAX_RECONNECT_DELAY);
     };
     ws.onerror = () => ws.close();
     ws.onmessage = (e) => {

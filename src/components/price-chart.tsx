@@ -58,7 +58,8 @@ export function PriceChart({ ticks, fills, tick }: Props) {
       autoscaleInfoProvider: (original: () => { priceRange: { minValue: number; maxValue: number }; margins?: { above: number; below: number } } | null) => {
         const res = original();
         const extras = extraPricesRef.current;
-        if (extras.length === 0) return res;
+
+        if (!res && extras.length === 0) return null;
 
         let min = res?.priceRange.minValue ?? Infinity;
         let max = res?.priceRange.maxValue ?? -Infinity;
@@ -66,6 +67,7 @@ export function PriceChart({ ticks, fills, tick }: Props) {
           if (p < min) min = p;
           if (p > max) max = p;
         }
+        if (!isFinite(min) || !isFinite(max)) return res;
         return {
           priceRange: { minValue: min, maxValue: max },
           margins: { above: 0.05, below: 0.05 },
@@ -87,6 +89,9 @@ export function PriceChart({ ticks, fills, tick }: Props) {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
+      linesRef.current.clear();
+      markersRef.current = [];
+      extraPricesRef.current = [];
       lastTickCount.current = 0;
       lastTime.current = 0;
     };
