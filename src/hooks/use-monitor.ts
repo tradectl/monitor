@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, useCallback } from "react";
-import type { MonitorTick, MonitorFill, MonitorEvent } from "../types/monitor";
+import type { MonitorTick, MonitorFill, ShadowSummary, MonitorEvent } from "../types/monitor";
 
 const MAX_TICKS = 7200;
 const INITIAL_RECONNECT_DELAY = 3000;
@@ -10,6 +10,7 @@ export interface StrategyData {
   tick: MonitorTick | null;
   ticks: MonitorTick[];
   fills: MonitorFill[];
+  shadow: ShadowSummary | null;
 }
 
 /** Unique key for a fill to deduplicate. */
@@ -74,12 +75,14 @@ export function useMonitor(url: string) {
             tick: null,
             ticks: [],
             fills: [],
+            shadow: null,
           };
           const ticks = [...existing.ticks, event];
           next.set(key, {
             tick: event,
             ticks: ticks.length > MAX_TICKS ? ticks.slice(-MAX_TICKS) : ticks,
             fills: existing.fills,
+            shadow: existing.shadow,
           });
           return next;
         });
@@ -96,10 +99,27 @@ export function useMonitor(url: string) {
             tick: null,
             ticks: [],
             fills: [],
+            shadow: null,
           };
           next.set(key, {
             ...existing,
             fills: [...existing.fills, event],
+          });
+          return next;
+        });
+      } else if (event.type === "Shadow") {
+        const key = `${event.strategy_name}/${event.symbol}`;
+        setStrategies((prev) => {
+          const next = new Map(prev);
+          const existing = next.get(key) || {
+            tick: null,
+            ticks: [],
+            fills: [],
+            shadow: null,
+          };
+          next.set(key, {
+            ...existing,
+            shadow: event,
           });
           return next;
         });

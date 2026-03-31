@@ -11,19 +11,20 @@ import {
   type SeriesMarker,
   type Time,
 } from "lightweight-charts";
-import type { MonitorTick, MonitorFill } from "../types/monitor";
+import type { MonitorTick, MonitorFill, PriceLine } from "../types/monitor";
 
 interface Props {
   ticks: MonitorTick[];
   fills: MonitorFill[];
   tick: MonitorTick | null;
+  extraLines?: PriceLine[];
 }
 
-export function PriceChart({ ticks, fills, tick }: Props) {
+export function PriceChart({ ticks, fills, tick, extraLines }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const seriesRef = useRef<ISeriesApi<"Line"> | null>(null);
-  const linesRef = useRef<Map<string, IPriceLine>>(new Map());
+  const linesRef = useRef<IPriceLine[]>([]);
   const lastTickCount = useRef(0);
   const lastTime = useRef(0);
   const markersRef = useRef<SeriesMarker<Time>[]>([]);
@@ -89,7 +90,7 @@ export function PriceChart({ ticks, fills, tick }: Props) {
       chart.remove();
       chartRef.current = null;
       seriesRef.current = null;
-      linesRef.current.clear();
+      linesRef.current = [];
       markersRef.current = [];
       extraPricesRef.current = [];
       lastTickCount.current = 0;
@@ -124,13 +125,11 @@ export function PriceChart({ ticks, fills, tick }: Props) {
     const series = seriesRef.current;
     if (!series || !tick) return;
 
-    const lines = linesRef.current;
-
-    // Remove old lines
-    for (const [, line] of lines) {
-      series.removePriceLine(line);
+    // Remove ALL previous lines
+    for (const line of linesRef.current) {
+      try { series.removePriceLine(line); } catch {}
     }
-    lines.clear();
+    linesRef.current = [];
 
     const styleMap: Record<string, number> = {
       solid: LineStyle.Solid,
@@ -139,11 +138,12 @@ export function PriceChart({ ticks, fills, tick }: Props) {
     };
 
     const prices: number[] = [];
+    const created: IPriceLine[] = [];
 
-    for (const pl of tick.price_lines) {
+    const allLines = [...tick.price_lines, ...(extraLines ?? [])];
+    for (const pl of allLines) {
       prices.push(pl.price);
-      lines.set(
-        `${pl.label}_${pl.price}`,
+      created.push(
         series.createPriceLine({
           price: pl.price,
           color: pl.color,
@@ -155,8 +155,15 @@ export function PriceChart({ ticks, fills, tick }: Props) {
       );
     }
 
+    linesRef.current = created;
     extraPricesRef.current = prices;
-  }, [tick]);
+
+    return () => {
+      for (const line of created) {
+        try { series.removePriceLine(line); } catch {}
+      }
+    };
+  }, [tick, extraLines]);
 
   // Fill markers
   useEffect(() => {
