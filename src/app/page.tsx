@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useMonitor } from "../hooks/use-monitor";
 import { PriceChart } from "../components/price-chart";
 import { Positions } from "../components/positions";
+import { Shadow } from "../components/shadow";
 import { Stats } from "../components/stats";
 import { ConnectionStatus } from "../components/connection";
 import { ErrorBoundary } from "../components/error-boundary";
+import type { PriceLine } from "../types/monitor";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:9100";
 
@@ -13,6 +15,8 @@ export default function MonitorPage() {
   const { connected, strategies } = useMonitor(WS_URL);
   const keys = Array.from(strategies.keys());
   const [selected, setSelected] = useState<string | null>(null);
+  const [shadowLines, setShadowLines] = useState<PriceLine[] | null>(null);
+  const handleVariantSelect = useCallback((lines: PriceLine[] | null) => setShadowLines(lines), []);
   const activeKey = selected && keys.includes(selected) ? selected : keys[0] ?? null;
   const data = activeKey ? strategies.get(activeKey) : null;
 
@@ -39,6 +43,7 @@ export default function MonitorPage() {
                     ticks={data.ticks}
                     fills={data.fills}
                     tick={data.tick}
+                    extraLines={shadowLines ?? undefined}
                   />
                 </ErrorBoundary>
               </div>
@@ -48,6 +53,9 @@ export default function MonitorPage() {
                 </ErrorBoundary>
                 <ErrorBoundary>
                   <Positions tick={data.tick} fills={data.fills} />
+                </ErrorBoundary>
+                <ErrorBoundary>
+                  <Shadow shadow={data.shadow} onVariantSelect={handleVariantSelect} />
                 </ErrorBoundary>
               </div>
             </div>
