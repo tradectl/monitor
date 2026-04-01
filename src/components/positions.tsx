@@ -4,7 +4,7 @@ import type { MonitorTick, MonitorFill } from "../types/monitor";
 interface PositionData {
   side: string;
   quantity: number;
-  entry_price: number;
+  avg_entry: number;
   tp_price: number;
   sl_price: number;
 }
@@ -33,7 +33,7 @@ export function Positions({ tick, fills }: Props) {
         <div className="space-y-2">
           {positions.map((pos) => (
             <div
-              key={`${pos.side}-${pos.entry_price}-${pos.quantity}`}
+              key={`${pos.side}-${pos.avg_entry}-${pos.quantity}`}
               className="text-xs border border-slate-800 rounded p-2 space-y-1"
             >
               <div className="flex justify-between items-center">
@@ -53,7 +53,7 @@ export function Positions({ tick, fills }: Props) {
                   <div className="text-[10px] text-slate-600 uppercase">
                     Entry
                   </div>
-                  {pos.entry_price.toFixed(2)}
+                  {pos.avg_entry.toFixed(2)}
                 </div>
                 <div>
                   <div className="text-[10px] text-emerald-900 uppercase">
